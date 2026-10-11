@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="player_title">پخش‌کننده</string>
+    <string name="player_not_found">رسانه پیدا نشد یا هنوز کامل نشده است</string>
+    <string name="player_error">خطای پخش</string>
+</resources>

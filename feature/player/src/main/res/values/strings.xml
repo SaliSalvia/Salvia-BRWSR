@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="player_title">Player</string>
+    <string name="player_not_found">Media not found or not finished yet</string>
+    <string name="player_error">Playback error</string>
+</resources>

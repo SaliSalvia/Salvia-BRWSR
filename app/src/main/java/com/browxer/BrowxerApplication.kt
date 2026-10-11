@@ -4,6 +4,7 @@ import android.app.Application
 import android.webkit.WebView
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.browxer.app.BuildConfig
 import com.browxer.core.database.DownloadRecoveryWorker
 import com.yausername.aria2c.Aria2c
 import com.yausername.ffmpeg.FFmpeg
@@ -32,7 +33,7 @@ class BrowxerApplication : Application(), Configuration.Provider {
                 Aria2c.getInstance().init(this)
             } // failures surfaced in Settings -> Diagnostics
         }
-        // Recover interrupted downloads from the previous session
+        // Reset interrupted downloads to QUEUED (re-enqueue happens in StartupRecovery)
         DownloadRecoveryWorker.schedule(this)
         // CVE-hardening posture: WebView debugging bridge off in release
         if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true)

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_title">Downloads</string>
+    <string name="library_empty">No downloads yet</string>
+    <string name="library_play">Play in app</string>
+    <string name="library_delete">Delete</string>
+    <string name="status_queued">Queued</string>
+    <string name="status_downloading">Downloading</string>
+    <string name="status_completed">Completed</string>
+    <string name="status_failed">Failed</string>
+    <string name="status_paused">Paused</string>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_title">دانلودها</string>
+    <string name="library_empty">هنوز دانلودی وجود ندارد</string>
+    <string name="library_play">پخش در برنامه</string>
+    <string name="library_delete">حذف</string>
+    <string name="status_queued">در صف</string>
+    <string name="status_downloading">در حال دانلود</string>
+    <string name="status_completed">کامل شد</string>
+    <string name="status_failed">ناموفق</string>
+    <string name="status_paused">متوقف شد</string>
+</resources>
