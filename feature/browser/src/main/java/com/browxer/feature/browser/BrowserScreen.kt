@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -11,24 +12,15 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tab
 import androidx.compose.material.icons.filled.VideoLibrary
@@ -36,26 +28,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.browxer.core.domain.MediaCandidate
 import com.browxer.core.domain.SourceLayer
+import com.browxer.core.ui.component.BrowxerFab
+import com.browxer.core.ui.component.BrowxerSnackbarHost
+import com.browxer.core.ui.theme.DeepBlack
+import com.browxer.core.ui.theme.HotPink
+import com.browxer.core.ui.theme.NeonPurple
 import com.browxer.engine.sniffer.MediaSnifferBridge
 import com.browxer.feature.download_sheet.MediaQualitySelectionSheet
 import java.net.URLEncoder
-
-// Cyberpunk palette
-private val NeonPurple = Color(0xFF8A2BE2)
-private val HotPink = Color(0xFFFF1493)
-private val DeepBlack = Color(0xFF0A0A0A)
-private val IdleGray = Color(0x66555555)
 
 private const val HOME_URL = "https://duckduckgo.com"
 
@@ -84,6 +72,10 @@ fun BrowserScreen(
     val snackbarHost = remember { SnackbarHostState() }
     val webView = remember { mutableStateOf<WebView?>(null) }
 
+    val urlHint = stringResource(R.string.browser_url_hint)
+    val scanningMsg = stringResource(R.string.browser_scanning)
+    val tabsMsg = stringResource(R.string.browser_tabs_unavailable)
+
     LaunchedEffect(snackbarMsg) {
         snackbarMsg?.let { snackbarHost.showSnackbar(it); snackbarMsg = null }
     }
@@ -103,7 +95,7 @@ fun BrowserScreen(
     Box(Modifier.fillMaxSize().background(DeepBlack)) {
         Scaffold(
             containerColor = DeepBlack,
-            snackbarHost = { SnackbarHost(snackbarHost) },
+            snackbarHost = { BrowxerSnackbarHost(snackbarHost) },
             topBar = {
                 Row(
                     Modifier.fillMaxWidth().padding(8.dp),
@@ -115,7 +107,7 @@ fun BrowserScreen(
                         onValueChange = { urlText = it },
                         modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
                         singleLine = true,
-                        placeholder = { Text("Search or type URL", color = Color.Gray) },
+                        placeholder = { Text(urlHint, color = Color.Gray) },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
                         keyboardActions = KeyboardActions(
                             onGo = { navigateTo(urlText) }),
@@ -145,20 +137,16 @@ fun BrowserScreen(
                         Icon(Icons.Default.ArrowBack, "Back", tint = Color.White) }
                     IconButton(onClick = { webView.value?.loadUrl(HOME_URL) }) {
                         Icon(Icons.Default.Home, "Home", tint = Color.White) }
-                    IconButton(onClick = {
-                        snackbarMsg = "Tab management is not available in this build."
-                    }) {
+                    IconButton(onClick = { snackbarMsg = tabsMsg }) {
                         Icon(Icons.Default.Tab, "Tabs", tint = Color.White) }
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Default.Settings, "Settings", tint = Color.White) }
                 }
             },
             floatingActionButton = {
-                MagicFab(
+                BrowxerFab(
                     state = fabState,
-                    onIdleTap = {
-                        snackbarMsg = "Scanning... no playable media detected yet."
-                    },
+                    onIdleTap = { snackbarMsg = scanningMsg },
                     onMediaTap = {
                         val wv = webView.value
                         viewModel.onFabClicked(
@@ -214,11 +202,26 @@ private fun createBrowserWebView(
         .bufferedReader().use { it.readText() }
 
     return WebView(context).apply {
-        settings.javaScriptEnabled = true
-        settings.domStorageEnabled = true
-        settings.databaseEnabled = true
-        settings.mediaPlaybackRequiresUserGesture = false
-        settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+        settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            databaseEnabled = true
+            mediaPlaybackRequiresUserGesture = false
+            mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+            // Rendering-performance posture (§2.3): default cache, no
+            // WebView-internal zoom (Compose owns gestures), images on,
+            // high render priority on older APIs.
+            cacheMode = WebSettings.LOAD_DEFAULT
+            setSupportZoom(false)
+            builtInZoomControls = false
+            loadsImagesAutomatically = true
+            blockNetworkImage = false
+            @Suppress("DEPRECATION")
+            setRenderPriority(WebSettings.RenderPriority.HIGH)
+        }
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
+
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
 
@@ -290,41 +293,5 @@ private fun createBrowserWebView(
         }
         webChromeClient = WebChromeClient()
         loadUrl(HOME_URL)
-    }
-}
-
-@Composable
-private fun MagicFab(state: FabState, onIdleTap: () -> Unit, onMediaTap: () -> Unit) {
-    val pulse = if (state is FabState.MediaDetected) {
-        rememberInfiniteTransition(label = "pulse").animateFloat(
-            initialValue = 0.85f, targetValue = 1.1f,
-            animationSpec = infiniteRepeatable(tween(600, easing = LinearEasing), RepeatMode.Reverse),
-            label = "pulseScale").value
-    } else 1f
-
-    Box(
-        Modifier
-            .scale(pulse)
-            .size(60.dp)
-            .clip(CircleShape)
-            .background(
-                when (state) {
-                    is FabState.Idle -> Brush.linearGradient(IdleGray, IdleGray)
-                    is FabState.MediaDetected -> Brush.linearGradient(NeonPurple, HotPink)
-                    is FabState.Downloading -> Brush.linearGradient(NeonPurple, HotPink)
-                }
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        when (state) {
-            is FabState.Idle -> IconButton(onClick = onIdleTap) {
-                Icon(Icons.Default.Search, "Scan media", tint = Color.White) }
-            is FabState.MediaDetected -> IconButton(onClick = onMediaTap) {
-                Icon(Icons.Default.Download, "Download", tint = Color.White) }
-            is FabState.Downloading -> CircularProgressIndicator(
-                progress = { state.progress / 100f },
-                color = Color.White, trackColor = Color(0x33FFFFFF),
-                modifier = Modifier.padding(14.dp))
-        }
     }
 }

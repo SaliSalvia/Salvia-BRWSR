@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_url_hint">Search or type URL</string>
+    <string name="browser_scanning">Scanning… no playable media detected yet.</string>
+    <string name="browser_tabs_unavailable">Tab management is not available in this build.</string>
+</resources>

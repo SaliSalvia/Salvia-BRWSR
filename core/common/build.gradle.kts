@@ -25,4 +25,10 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.coroutines.android)
+
+    // Native media engines — lazy MediaEngines.ensureInitialized() only;
+    // no engine execution ever happens in this module.
+    implementation(libs.youtubedl.android.library)
+    implementation(libs.youtubedl.android.ffmpeg)
+    implementation(libs.youtubedl.android.aria2c)
 }

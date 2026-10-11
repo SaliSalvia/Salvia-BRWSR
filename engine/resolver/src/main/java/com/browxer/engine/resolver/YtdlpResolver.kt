@@ -1,10 +1,13 @@
 package com.browxer.engine.resolver
 
+import android.content.Context
+import com.browxer.core.common.MediaEngines
 import com.browxer.core.domain.DownloadTask
 import com.browxer.core.domain.MediaCandidate
 import com.browxer.core.domain.SourceLayer
 import com.yausername.youtubedl.YoutubeDL
 import com.yausername.youtubedl.YoutubeDLRequest
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -23,11 +26,14 @@ import javax.inject.Singleton
  * so a VideoInfo field rename can never break the build.
  */
 @Singleton
-class YtdlpResolver @Inject constructor() {
+class YtdlpResolver @Inject constructor(
+    @ApplicationContext private val appContext: Context
+) {
 
     /** Extraction-only (quality sheet): dump single JSON, parse defensively. */
     suspend fun extractCandidates(pageUrl: String, cookies: String?): List<MediaCandidate> =
         withContext(Dispatchers.IO) {
+            MediaEngines.ensureInitialized(appContext)
             val req = YoutubeDLRequest(pageUrl).apply {
                 addOption("--no-playlist")
                 addOption("-J") // dump single-video JSON, no download
@@ -60,6 +66,7 @@ class YtdlpResolver @Inject constructor() {
     /** Full download: yt-dlp + aria2c (16 connections) + FFmpeg mux to MP4. */
     suspend fun download(task: DownloadTask, onProgress: (Float) -> Unit): File =
         withContext(Dispatchers.IO) {
+            MediaEngines.ensureInitialized(appContext)
             val req = YoutubeDLRequest(task.url).apply {
                 addOption("-f", "bestvideo+bestaudio/best")
                 addOption("--downloader", "aria2c")

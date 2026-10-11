@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.browxer.core.common.BrowxerLocale
 
 private val NeonPurple = Color(0xFF8A2BE2)
 private val HotPink = Color(0xFFFF1493)
@@ -77,7 +78,8 @@ fun SettingsScreen(
             Surface(color = CardBg, shape = MaterialTheme.shapes.medium) {
                 Column(Modifier.fillMaxWidth().padding(16.dp)) {
                     Text(stringResource(R.string.settings_max_parallel), color = Color.White)
-                    Text(maxParallel.toString(), color = NeonPinkLabel,
+                    // Locale-aware digits (Persian users see native numerals)
+                    Text(BrowxerLocale.formatCount(maxParallel), color = HotPink,
                         style = MaterialTheme.typography.titleLarge)
                     Slider(
                         value = maxParallel.toFloat(),
@@ -103,5 +105,3 @@ fun SettingsScreen(
         }
     }
 }
-
-private val NeonPinkLabel = Color(0xFFFF1493)

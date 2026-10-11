@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.browxer.core.database.DownloadEntity
+import com.browxer.core.ui.component.EmptyState
 
 private val NeonPurple = Color(0xFF8A2BE2)
 private val DeepBlack = Color(0xFF0A0A0A)
@@ -47,8 +48,9 @@ fun LibraryScreen(
         }
     ) { padding ->
         if (items.isEmpty()) {
+            // Illustrated empty state — never a bare gray Text.
             Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.library_empty), color = Color.Gray)
+                EmptyState(title = stringResource(R.string.library_empty))
             }
         } else {
             LazyColumn(

@@ -34,6 +34,9 @@ dependencies {
     implementation(libs.youtubedl.android.ffmpeg)
     implementation(libs.youtubedl.android.aria2c)
 
+    // HlsDownloader fetches segments over OkHttp (Hilt-injected client)
+    implementation(libs.okhttp)
+
     implementation(libs.work.runtime.ktx)
 
     implementation(libs.hilt.android)

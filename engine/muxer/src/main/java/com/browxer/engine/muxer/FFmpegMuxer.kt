@@ -1,6 +1,9 @@
 package com.browxer.engine.muxer
 
+import android.content.Context
+import com.browxer.core.common.MediaEngines
 import com.yausername.ffmpeg.FFmpeg
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,7 +15,9 @@ import javax.inject.Singleton
  * FFmpegResponse fields (a response rename can then never break the build).
  */
 @Singleton
-class FFmpegMuxer @Inject constructor() {
+class FFmpegMuxer @Inject constructor(
+    @ApplicationContext private val appContext: Context
+) {
 
     /** Merge separate A/V streams, stream-copy, web-optimized MP4 (+faststart). */
     fun merge(video: File, audio: File, output: File) {
@@ -46,6 +51,8 @@ class FFmpegMuxer @Inject constructor() {
 
     private fun execute(args: List<String>, output: File) {
         output.parentFile?.mkdirs()
+        // Engines extract lazily — never in Application.onCreate.
+        MediaEngines.ensureInitialized(appContext)
         runCatching { FFmpeg.getInstance().execute(args) }
             .getOrElse { throw IllegalStateException("FFmpeg invocation failed: " + it.message) }
         check(output.exists() && output.length() > 0) {

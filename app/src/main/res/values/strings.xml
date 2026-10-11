@@ -39,4 +39,8 @@
     <string name="incognito_title">Incognito</string>
     <string name="bookmarks_title">Bookmarks</string>
     <string name="history_title">History</string>
+    <plurals name="download_count">
+        <item quantity="one">%d download</item>
+        <item quantity="other">%d downloads</item>
+    </plurals>
 </resources>

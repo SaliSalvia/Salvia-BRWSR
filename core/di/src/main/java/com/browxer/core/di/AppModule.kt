@@ -12,7 +12,10 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import okhttp3.Cache
+import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
+import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -35,11 +38,19 @@ object AppModule {
     fun provideDownloadDao(db: BrowxerDatabase): DownloadDao = db.downloadDao()
 
     @Provides @Singleton
-    fun provideOkHttp(): OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .followRedirects(true)
-        .build()
+    fun provideOkHttp(@ApplicationContext ctx: Context): OkHttpClient {
+        // Shared 50 MB HTTP cache — resolvers AND the HLS segment fetcher ride
+        // the same client, so one page fetch warms the CDN connections.
+        val httpCacheDir = File(ctx.cacheDir, "http_cache")
+            .also { if (!it.exists()) it.mkdirs() }
+        return OkHttpClient.Builder()
+            .cache(Cache(httpCacheDir, 50L * 1024 * 1024))
+            .connectionPool(ConnectionPool(8, 5, TimeUnit.MINUTES))
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .followRedirects(true)
+            .build()
+    }
 
     /** Background scope for the sniffer bridge (Dispatchers.Default). */
     @Provides @Singleton

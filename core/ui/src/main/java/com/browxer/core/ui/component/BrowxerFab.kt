@@ -58,7 +58,6 @@ import com.browxer.core.ui.motion.rememberSystemAnimationsEnabled
 import com.browxer.core.ui.theme.BrowxerGradient
 import com.browxer.core.ui.theme.GlassBorder
 import com.browxer.core.ui.theme.HotPink
-import com.browxer.core.ui.theme.NeonPurple
 import com.browxer.core.ui.theme.Surface2
 import com.browxer.core.ui.theme.Surface3
 import com.browxer.core.ui.theme.TextPrimary
@@ -283,5 +282,3 @@ private fun FabDownloading(progress: Int) {
         )
     }
 }
-
-private fun androidx.compose.foundation.layout.BoxScope.noop() = Unit

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_url_hint">جست‌وجو یا وارد کردن آدرس</string>
+    <string name="browser_scanning">در حال اسکن… هنوز هیچ رسانه‌ای قابل پخش پیدا نشده است.</string>
+    <string name="browser_tabs_unavailable">مدیریت زبانه‌ها در این نسخه موجود نیست.</string>
+</resources>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">براوزر</string>
-    <string name="url_hint">جستجو یا وارد کردن آدرس</string>
+    <string name="url_hint">جست‌وجو یا وارد کردن آدرس</string>
     <string name="nav_back">بازگشت</string>
     <string name="nav_home">خانه</string>
     <string name="nav_tabs">زبانه‌ها</string>
@@ -39,4 +39,8 @@
     <string name="incognito_title">حالت ناشناس</string>
     <string name="bookmarks_title">نشانک‌ها</string>
     <string name="history_title">تاریخچه</string>
+    <plurals name="download_count">
+        <item quantity="one">%d دانلود</item>
+        <item quantity="other">%d دانلود</item>
+    </plurals>
 </resources>

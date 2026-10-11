@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sheet_quality_label">کیفیت</string>
+    <string name="sheet_rename">تغییر نام</string>
+    <string name="sheet_download_action">دانلود</string>
+    <string name="sheet_unknown_size">حجم نامشخص</string>
+    <string name="sheet_unknown_res">نامشخص</string>
+</resources>
