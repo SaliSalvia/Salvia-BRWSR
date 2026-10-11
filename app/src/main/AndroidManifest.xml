@@ -8,19 +8,26 @@
     <!-- Without this, DownloadService crashes on Android 14+ -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
     <application
-        android:name=".BrowxerApplication"
-        android:label="@string/app_name"
+        android:name="com.browxer.BrowxerApplication"
+        android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.Browxer"
-        android:usesCleartextTraffic="false">
+        android:usesCleartextTraffic="false"
+        android:extractNativeLibs="true">
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.browxer.app.MainActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize"
             android:windowSoftInputMode="adjustResize">
@@ -37,11 +44,11 @@
         </activity>
 
         <service
-            android:name=".engine.downloader.DownloadService"
+            android:name="com.browxer.engine.downloader.DownloadService"
             android:foregroundServiceType="dataSync"
             android:exported="false" />
 
-        <!-- WorkManager: remove default initializer, Hilt provides the factory -->
+        <!-- WorkManager: remove default initializer, BrowxerApplication provides Configuration -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"

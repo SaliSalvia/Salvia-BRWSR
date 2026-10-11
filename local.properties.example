@@ -1,0 +1,11 @@
+# Copy to local.properties and adjust. NEVER commit local.properties.
+# Android SDK location (Android Studio sets this automatically)
+sdk.dir=/home/USER/Android/Sdk
+# Optional: explicit NDK path for youtubedl-android JNI builds
+# ndk.dir is deprecated in AGP 8.x; AGP auto-installs NDK 26.1.10909125 from the SDK.
+
+# Release signing (or use env vars BROWXER_KEYSTORE_PATH etc.)
+#BROWXER_KEYSTORE_PATH=/absolute/path/browxer-release.keystore
+#BROWXER_KEYSTORE_PASSWORD=your-store-password
+#BROWXER_KEY_ALIAS=browxer
+#BROWXER_KEY_PASSWORD=your-key-password
