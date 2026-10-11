@@ -15,14 +15,17 @@ import com.browxer.engine.ranker.ScoredCandidate
 import com.browxer.engine.resolver.DashParser
 import com.browxer.engine.resolver.HlsParser
 import com.browxer.engine.resolver.YtdlpResolver
+import com.browxer.engine.sniffer.HtmlMediaParser
 import com.browxer.engine.sniffer.MediaSnifferBridge
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 
@@ -30,6 +33,7 @@ import javax.inject.Inject
 class BrowserViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     val snifferBridge: MediaSnifferBridge, // exposed so the WebView can register it
+    private val htmlParser: HtmlMediaParser, // Stage-2 jsoup fallback
     private val ranker: MediaCandidateRanker,
     private val admission: MediaSniffAdmission,
     private val hlsParser: HlsParser,
@@ -60,6 +64,21 @@ class BrowserViewModel @Inject constructor(
         if (buffer.size >= MAX_CANDIDATES) buffer.removeFirst()
         buffer.addLast(candidate)
         recomputeFab()
+    }
+
+    /**
+     * Stage-2 fallback (InShot-parity): jsoup over the finished page's HTML.
+     * The HTML string arrives JSON-encoded from evaluateJavascript; it is
+     * decoded and parsed on Dispatchers.Default — never on the main thread.
+     */
+    fun onHtmlAvailable(jsonEncodedHtml: String, baseUrl: String) {
+        if (jsonEncodedHtml.isBlank() || baseUrl.isBlank()) return
+        viewModelScope.launch {
+            val candidates = withContext(Dispatchers.Default) {
+                htmlParser.parseJsonEncoded(jsonEncodedHtml, baseUrl)
+            }
+            candidates.forEach { onMediaDetected(it) }
+        }
     }
 
     private fun recomputeFab() {

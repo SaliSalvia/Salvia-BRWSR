@@ -2,8 +2,12 @@ package com.browxer.feature.browser
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.os.Handler
+import android.os.Looper
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -42,6 +46,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.browxer.core.domain.MediaCandidate
+import com.browxer.core.domain.SourceLayer
 import com.browxer.engine.sniffer.MediaSnifferBridge
 import com.browxer.feature.download_sheet.MediaQualitySelectionSheet
 import java.net.URLEncoder
@@ -53,6 +59,16 @@ private val DeepBlack = Color(0xFF0A0A0A)
 private val IdleGray = Color(0x66555555)
 
 private const val HOME_URL = "https://duckduckgo.com"
+
+// Stage-3 network sniffing (InShot's filter set)
+private val NETWORK_MEDIA_EXT = listOf(
+    ".mp4", ".m4v", ".webm", ".mkv", ".mov", ".avi", ".wmv",
+    ".m3u8", ".mpd", ".mp3", ".m4a", ".aac", ".ogg", ".opus", ".flac"
+)
+private val SEGMENT_OR_PARTIAL = Regex(
+    """\.(ts|m4s|cmfv|cmfa)(\\?|$)|/seg-|/segment|/chunk|/frag-|range=""",
+    RegexOption.IGNORE_CASE)
+private val mainHandler = Handler(Looper.getMainLooper())
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -159,6 +175,7 @@ fun BrowserScreen(
                     factory = { ctx ->
                         createBrowserWebView(
                             context = ctx,
+                            viewModel = viewModel,
                             bridge = viewModel.snifferBridge,
                             onUrlChanged = { urlText = it }
                         ).also { webView.value = it }
@@ -188,6 +205,7 @@ fun BrowserScreen(
 @SuppressLint("SetJavaScriptEnabled")
 private fun createBrowserWebView(
     context: android.content.Context,
+    viewModel: BrowserViewModel,
     bridge: MediaSnifferBridge,
     onUrlChanged: (String) -> Unit
 ): WebView {
@@ -211,6 +229,57 @@ private fun createBrowserWebView(
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 // document-start injection of the DOM/blob sniffer (Layer 2 + 3)
                 view?.evaluateJavascript(snifferJs, null)
+            }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                // Stage-2 fallback (InShot-parity): capture the rendered HTML
+                // and hand it to the jsoup parser — runs off the main thread.
+                view?.evaluateJavascript(
+                    "document.documentElement.outerHTML"
+                ) { result ->
+                    viewModel.onHtmlAvailable(
+                        jsonEncodedHtml = result ?: "",
+                        baseUrl = url ?: view.url ?: ""
+                    )
+                }
+            }
+
+            // Stage-3 (InShot-parity): native media-player requests (<video>) never
+            // go through page fetch/XHR — intercept them here, on the WebView's
+            // background thread, and hop to main for the ViewModel buffer.
+            override fun shouldInterceptRequest(
+                view: WebView?, request: WebResourceRequest?
+            ): WebResourceResponse? {
+                val url = request?.url?.toString()
+                    ?: return super.shouldInterceptRequest(view, request)
+                if (NETWORK_MEDIA_EXT.any { url.contains(it, ignoreCase = true) } &&
+                    !SEGMENT_OR_PARTIAL.containsMatchIn(url)
+                ) {
+                    val pageUrl = view?.url ?: url
+                    mainHandler.post {
+                        viewModel.onMediaDetected(
+                            MediaCandidate(
+                                url = url, mimeType = "video",
+                                source = SourceLayer.NETWORK_XHR, pageUrl = pageUrl))
+                    }
+                }
+                return super.shouldInterceptRequest(view, request)
+            }
+
+            // Manifests surface even when a page blocks script injection entirely.
+            override fun onLoadResource(view: WebView?, url: String?) {
+                if (url != null && (url.contains(".m3u8", true) ||
+                        url.contains(".mpd", true)) &&
+                    !SEGMENT_OR_PARTIAL.containsMatchIn(url)
+                ) {
+                    val pageUrl = view?.url ?: url
+                    mainHandler.post {
+                        viewModel.onMediaDetected(
+                            MediaCandidate(
+                                url = url, mimeType = "application/vnd.apple.mpegurl",
+                                source = SourceLayer.NETWORK_XHR, pageUrl = pageUrl))
+                    }
+                }
             }
 
             override fun doUpdateVisitedHistory(
