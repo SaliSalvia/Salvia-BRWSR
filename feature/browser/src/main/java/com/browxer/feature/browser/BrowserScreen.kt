@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -65,8 +64,9 @@ private val NETWORK_MEDIA_EXT = listOf(
     ".mp4", ".m4v", ".webm", ".mkv", ".mov", ".avi", ".wmv",
     ".m3u8", ".mpd", ".mp3", ".m4a", ".aac", ".ogg", ".opus", ".flac"
 )
+// Segments / partial-range requests are never offered as download candidates
 private val SEGMENT_OR_PARTIAL = Regex(
-    """\.(ts|m4s|cmfv|cmfa)(\\?|$)|/seg-|/segment|/chunk|/frag-|range=""",
+    """\.(ts|m4s|cmfv|cmfa)(\?|$)|/seg-|/segment|/chunk|/frag-|range=""",
     RegexOption.IGNORE_CASE)
 private val mainHandler = Handler(Looper.getMainLooper())
 
