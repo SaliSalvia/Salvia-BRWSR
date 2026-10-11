@@ -109,3 +109,42 @@ jobs:
           for f in artifacts/*.apk; do
             echo "| $(basename $f) | $(du -h $f | cut -f1) |" >> $GITHUB_STEP_SUMMARY
           done
+
+  macrobenchmark-compile:
+    # Independent job: a benchmark-module compile error must never block the
+    # APK build / release. Real benchmark runs need a physical device and are
+    # done locally (see README-BUILD.md, "Performance & benchmarks").
+    name: Macrobenchmark module compiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install platform & build tools
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Generate Gradle wrapper
+        run: gradle wrapper --gradle-version 8.9 --distribution-type bin
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Compile Macrobenchmarks
+        run: ./gradlew :macrobenchmark:assembleDebug --stacktrace

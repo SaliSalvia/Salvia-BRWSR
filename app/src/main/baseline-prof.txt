@@ -1,0 +1,29 @@
+# Browxer baseline profile — hand-written wildcard rules.
+#
+# AGP merges this file into the packaged profile (profgen expands the
+# wildcards against the dex files) and androidx.profileinstaller installs
+# it on first launch. Wildcards keep the profile robust to R8 renames;
+# entries that match nothing after shrinking are dropped silently.
+#
+# TODO(benchmark): replace with a device-generated profile once the
+# :macrobenchmark StartupBenchmark/ScrollBenchmark run on a real device.
+
+# App cold path — application, activity, navigation, browser screen
+HSPLcom/browxer/app/**->**(**)
+HSPLcom/browxer/BrowxerApplication;->**(**)
+HSPLcom/browxer/core/**->**(**)
+HSPLcom/browxer/feature/browser/**->**(**)
+
+# Compose hot path
+HSPLandroidx/compose/runtime/**->**(**)
+HSPLandroidx/compose/ui/**->**(**)
+HSPLandroidx/compose/material3/**->**(**)
+
+# Startup helpers: Hilt, Room, DataStore
+HSPLdagger/internal/**->**(**)
+HSPLandroidx/room/**->**(**)
+HSPLandroidx/datastore/**->**(**)
+
+# Class-load rules for the cold-start classes
+Lcom/browxer/app/MainActivity;
+Lcom/browxer/BrowxerApplication;

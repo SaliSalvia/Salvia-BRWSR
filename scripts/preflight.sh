@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Browxer pre-flight — run before tagging a release (bash scripts/preflight.sh).
-# Checks the 6 known CI risks in order of likelihood.
+# Checks the 8 known CI/build risks in order of likelihood.
 set -u
 FAIL=0
 
@@ -77,6 +77,29 @@ if [ -x ./gradlew ] && [ -f gradle/wrapper/gradle-wrapper.jar ]; then
   fi
 else
   warn "skipped (no runnable local wrapper) — CI will run it"
+fi
+
+step "7. Baseline profile & ProfileInstaller"
+if [ -f app/src/main/baseline-prof.txt ]; then
+  ok "baseline-prof.txt present in :app"
+else
+  fail "app/src/main/baseline-prof.txt missing"
+fi
+if grep -q 'androidx-profileinstaller' gradle/libs.versions.toml && grep -q 'libs.androidx.profileinstaller' app/build.gradle.kts; then
+  ok "androidx.profileinstaller wired into :app"
+else
+  fail "androidx.profileinstaller missing — the baseline profile will not install"
+fi
+
+step "8. Macrobenchmark module compiles"
+if [ -x ./gradlew ] && [ -f gradle/wrapper/gradle-wrapper.jar ]; then
+  if ./gradlew :macrobenchmark:assembleDebug --stacktrace; then
+    ok "macrobenchmark module compiles"
+  else
+    fail ":macrobenchmark:assembleDebug failed"
+  fi
+else
+  warn "skipped (no runnable local wrapper) — CI compiles it in the macrobenchmark-compile job"
 fi
 
 printf '\n'
