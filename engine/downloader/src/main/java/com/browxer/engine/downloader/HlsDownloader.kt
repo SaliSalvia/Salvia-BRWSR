@@ -5,11 +5,17 @@ import com.browxer.core.domain.DownloadTask
 import com.browxer.engine.muxer.FFmpegMuxer
 import com.browxer.engine.resolver.HlsParser
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.net.URI
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,9 +25,14 @@ class HlsDownloader @Inject constructor(
     private val parser: HlsParser,       // throws HlsLive/HlsEncrypted upstream
     private val muxer: FFmpegMuxer
 ) {
+    companion object {
+        private const val POOL = 4 // concurrent segment fetches (InShot-parity)
+    }
+
     /**
-     * Segment-wise download with resume (existing segments skipped), then remux to MP4.
-     * NOTE (honest stub): currently sequential; a concurrency pool is the next task.
+     * Parallel segment download (pool of 4), resume-friendly (existing
+     * segments skipped), then remux to MP4. AES-128 / live are already
+     * rejected upstream with typed errors — never silently.
      */
     suspend fun download(task: DownloadTask, onProgress: (Float) -> Unit): DownloadResult =
         withContext(Dispatchers.IO) {
@@ -32,18 +43,24 @@ class HlsDownloader @Inject constructor(
                 .map { base.resolve(it.trim()).toString() }
             check(segments.isNotEmpty()) { "Empty media playlist" }
 
-            val segDir = File(task.workDir, ".segments-${task.id}").apply { mkdirs() }
-            var done = 0
-            segments.forEachIndexed { i, segUrl ->
-                val segFile = File(segDir, "seg_%05d".format(i))
-                if (!segFile.exists()) {   // resume: skip already-downloaded segments
-                    fetchTo(segUrl, segFile)
-                }
-                done++
-                onProgress(done.toFloat() / segments.size)
+            val segDir = File(task.workDir, ".segments-" + task.id).apply { mkdirs() }
+            val done = AtomicInteger(0)
+
+            coroutineScope {
+                val gate = Semaphore(POOL)
+                segments.mapIndexed { i, segUrl ->
+                    async {
+                        val segFile = File(segDir, "seg_%05d".format(i))
+                        if (!segFile.exists()) {   // resume: skip downloaded segments
+                            gate.withPermit { fetchTo(segUrl, segFile) }
+                        }
+                        val d = done.incrementAndGet()
+                        onProgress(d.toFloat() / segments.size)
+                    }
+                }.awaitAll()
             }
 
-            // Concatenate + remux (faststart). AES-128 already rejected upstream.
+            // Concatenate strictly in playlist order (parallel fetch lands OOO)
             val rawTs = File(task.workDir, task.fileName + ".ts")
             rawTs.outputStream().use { out ->
                 segments.indices.forEach { i ->
@@ -58,14 +75,14 @@ class HlsDownloader @Inject constructor(
 
     private suspend fun fetch(url: String): String = withContext(Dispatchers.IO) {
         http.newCall(Request.Builder().url(url).build()).execute().use { resp ->
-            check(resp.isSuccessful) { "Playlist fetch failed: ${resp.code}" }
+            check(resp.isSuccessful) { "Playlist fetch failed: " + resp.code }
             resp.body.string()
         }
     }
 
     private suspend fun fetchTo(url: String, out: File) = withContext(Dispatchers.IO) {
         http.newCall(Request.Builder().url(url).build()).execute().use { resp ->
-            check(resp.isSuccessful) { "Segment fetch failed: ${resp.code}" }
+            check(resp.isSuccessful) { "Segment fetch failed: " + resp.code }
             resp.body.byteStream().use { it.copyTo(out.outputStream()) }
         }
     }
