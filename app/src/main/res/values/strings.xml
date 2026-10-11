@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Browxer</string>
+    <string name="url_hint">Search or type URL</string>
+    <string name="nav_back">Back</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_tabs">Tabs</string>
+    <string name="nav_settings">Settings</string>
+    <string name="fab_scanning">Scanning… no playable media detected yet.</string>
+    <string name="fab_download">Download</string>
+    <string name="sheet_quality">Quality</string>
+    <string name="sheet_rename">Rename</string>
+    <string name="sheet_download">DOWNLOAD</string>
+    <string name="sheet_unsupported">Unsupported: DRM / Live / Encrypted</string>
+    <string name="error_drm">This media is DRM-protected and cannot be downloaded.</string>
+    <string name="error_live">Live streams are not supported.</string>
+    <string name="error_encrypted">Encrypted HLS (AES-128) is not supported.</string>
+    <string name="error_dash_unsupported">DASH format is not supported for this media.</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_storage">Not enough storage space.</string>
+    <string name="error_blob_too_large">Blob too large to capture (max 50 MB).</string>
+    <string name="download_started">Download started</string>
+    <string name="download_success">Downloaded successfully</string>
+    <string name="download_failed">Download failed</string>
+    <string name="download_paused_wifi">Waiting for Wi-Fi</string>
+    <string name="download_resume">Resume</string>
+    <string name="download_cancel">Cancel</string>
+    <string name="download_retry">Retry</string>
+    <string name="download_delete">Delete</string>
+    <string name="download_play">Play in app</string>
+    <string name="settings_wifi_only">Download over Wi-Fi only</string>
+    <string name="settings_max_parallel">Max simultaneous downloads</string>
+    <string name="settings_download_dir">Download directory</string>
+    <string name="settings_fab_enabled">Show download button</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_default_quality">Default quality</string>
+    <string name="library_title">Downloads</string>
+    <string name="incognito_title">Incognito</string>
+    <string name="bookmarks_title">Bookmarks</string>
+    <string name="history_title">History</string>
+</resources>

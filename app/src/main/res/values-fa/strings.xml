@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">براوزر</string>
+    <string name="url_hint">جستجو یا وارد کردن آدرس</string>
+    <string name="nav_back">بازگشت</string>
+    <string name="nav_home">خانه</string>
+    <string name="nav_tabs">زبانه‌ها</string>
+    <string name="nav_settings">تنظیمات</string>
+    <string name="fab_scanning">در حال اسکن… هنوز هیچ رسانه‌ای قابل پخش پیدا نشده است.</string>
+    <string name="fab_download">دانلود</string>
+    <string name="sheet_quality">کیفیت</string>
+    <string name="sheet_rename">تغییر نام</string>
+    <string name="sheet_download">دانلود</string>
+    <string name="sheet_unsupported">پشتیبانی نمی‌شود: DRM / پخش زنده / رمزنگاری‌شده</string>
+    <string name="error_drm">این محتوا با DRM محافظت شده و قابل دانلود نیست.</string>
+    <string name="error_live">پخش‌های زنده پشتیبانی نمی‌شوند.</string>
+    <string name="error_encrypted">استریم رمزنگاری‌شده HLS (AES-128) پشتیبانی نمی‌شود.</string>
+    <string name="error_dash_unsupported">فرمت DASH برای این محتوا پشتیبانی نمی‌شود.</string>
+    <string name="error_network">خطای شبکه. لطفاً اتصال خود را بررسی کنید.</string>
+    <string name="error_storage">فضای ذخیره‌سازی کافی نیست.</string>
+    <string name="error_blob_too_large">حجم رسانه بیش از حد مجاز است (حداکثر ۵۰ مگابایت).</string>
+    <string name="download_started">دانلود شروع شد</string>
+    <string name="download_success">با موفقیت دانلود شد</string>
+    <string name="download_failed">دانلود ناموفق بود</string>
+    <string name="download_paused_wifi">در انتظار اتصال Wi-Fi</string>
+    <string name="download_resume">ادامه</string>
+    <string name="download_cancel">لغو</string>
+    <string name="download_retry">تلاش مجدد</string>
+    <string name="download_delete">حذف</string>
+    <string name="download_play">پخش در برنامه</string>
+    <string name="settings_wifi_only">دانلود فقط با Wi-Fi</string>
+    <string name="settings_max_parallel">حداکثر دانلود همزمان</string>
+    <string name="settings_download_dir">پوشه دانلود</string>
+    <string name="settings_fab_enabled">نمایش دکمه دانلود</string>
+    <string name="settings_theme">پوسته</string>
+    <string name="settings_language">زبان</string>
+    <string name="settings_default_quality">کیفیت پیش‌فرض</string>
+    <string name="library_title">دانلودها</string>
+    <string name="incognito_title">حالت ناشناس</string>
+    <string name="bookmarks_title">نشانک‌ها</string>
+    <string name="history_title">تاریخچه</string>
+</resources>
