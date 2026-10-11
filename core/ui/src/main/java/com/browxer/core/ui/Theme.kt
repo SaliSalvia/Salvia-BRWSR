@@ -5,29 +5,45 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-
-val NeonPurple = Color(0xFF8A2BE2)
-val HotPink = Color(0xFFFF1493)
-val DeepBlack = Color(0xFF0A0A0A)
-
-/** Signature neon gradient for the FAB / Download button. */
-val BrowxerGradient = Brush.linearGradient(listOf(NeonPurple, HotPink))
+import com.browxer.core.ui.theme.BrowxerShapes
+import com.browxer.core.ui.theme.BrowxerTypography
 
 private val BrowxerDark = darkColorScheme(
-    primary = NeonPurple,            // Neon Purple
+    primary = com.browxer.core.ui.theme.NeonPurple,
     onPrimary = Color.Black,
-    secondary = HotPink,             // Hot Pink
+    primaryContainer = com.browxer.core.ui.theme.NeonPurple,
+    onPrimaryContainer = Color.White,
+    secondary = com.browxer.core.ui.theme.HotPink,
     onSecondary = Color.Black,
-    background = DeepBlack,          // Deep Black
-    surface = Color(0xFF141414),
-    surfaceVariant = Color(0xFF1E1E1E),
-    onBackground = Color(0xFFEDEDED),
-    onSurface = Color(0xFFEDEDED),
-    error = Color(0xFFFF4444)
+    background = com.browxer.core.ui.theme.Surface0,
+    onBackground = com.browxer.core.ui.theme.TextPrimary,
+    surface = com.browxer.core.ui.theme.Surface1,
+    onSurface = com.browxer.core.ui.theme.TextPrimary,
+    surfaceVariant = com.browxer.core.ui.theme.Surface2,
+    onSurfaceVariant = com.browxer.core.ui.theme.TextSecondary,
+    surfaceTint = com.browxer.core.ui.theme.NeonPurple,
+    inverseSurface = com.browxer.core.ui.theme.Surface3,
+    inverseOnSurface = com.browxer.core.ui.theme.TextPrimary,
+    error = com.browxer.core.ui.theme.ErrorRed,
+    onError = Color.Black,
+    outline = com.browxer.core.ui.theme.TextTertiary,
+    outlineVariant = com.browxer.core.ui.theme.Surface3
 )
 
 /** The cyberpunk dark palette is enforced; no light theme is offered. */
 @Composable
 fun BrowxerTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = BrowxerDark, content = content)
+    MaterialTheme(
+        colorScheme = BrowxerDark,
+        typography = BrowxerTypography,
+        shapes = BrowxerShapes,
+        content = content
+    )
 }
+
+// Back-compat re-exports — the brand tokens now live in
+// com.browxer.core.ui.theme, but existing modules import them from here.
+val NeonPurple: Color = com.browxer.core.ui.theme.NeonPurple
+val HotPink: Color = com.browxer.core.ui.theme.HotPink
+val DeepBlack: Color = com.browxer.core.ui.theme.DeepBlack
+val BrowxerGradient: Brush = com.browxer.core.ui.theme.BrowxerGradient

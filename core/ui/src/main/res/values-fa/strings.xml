@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fab_content_scan">جست‌وجوی رسانه</string>
+    <string name="fab_content_download">دانلود رسانه</string>
+    <string name="fab_content_downloading">پیشرفت دانلود</string>
+</resources>

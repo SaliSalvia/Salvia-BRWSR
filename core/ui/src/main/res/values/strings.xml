@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fab_content_scan">Scan for media</string>
+    <string name="fab_content_download">Download media</string>
+    <string name="fab_content_downloading">Download progress</string>
+</resources>
