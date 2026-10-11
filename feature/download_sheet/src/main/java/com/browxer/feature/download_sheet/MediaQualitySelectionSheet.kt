@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.browxer.core.domain.MediaCandidate
-import com.browxer.feature.browser.QualitySheetState
+import com.browxer.core.ui.QualitySheetState
 
 private val NeonPurple = Color(0xFF8A2BE2)
 private val HotPink = Color(0xFFFF1493)
@@ -42,7 +42,7 @@ fun MediaQualitySelectionSheet(
             Spacer(Modifier.height(12.dp))
             Text(fileName, style = MaterialTheme.typography.titleMedium, color = Color.White)
             Text(
-                (selected?.resolution ?: "unknown") + " · " + formatSize(selected?.sizeBytes ?: -1),
+                (selected?.resolution ?: "unknown") + " - " + formatSize(selected?.sizeBytes ?: -1),
                 style = MaterialTheme.typography.bodySmall, color = Color.Gray)
 
             // Honest unsupported state — DRM / Live / Encrypted / DASH-unsupported
@@ -50,7 +50,7 @@ fun MediaQualitySelectionSheet(
                 Spacer(Modifier.height(12.dp))
                 Surface(color = Color(0x33FF1493), shape = RoundedCornerShape(12.dp)) {
                     Text(
-                        "⚠ " + state.errorMessage.orEmpty(),
+                        "! " + state.errorMessage.orEmpty(),
                         color = HotPink, modifier = Modifier.padding(12.dp))
                 }
             }
@@ -64,7 +64,7 @@ fun MediaQualitySelectionSheet(
                 var expanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(expanded, { expanded = it }) {
                     OutlinedTextField(
-                        value = selected?.let { it.resolution + " · " + formatSize(it.sizeBytes) }
+                        value = selected?.let { it.resolution + " - " + formatSize(it.sizeBytes) }
                             ?: "Quality",
                         onValueChange = {}, readOnly = true,
                         label = { Text("Quality") },
@@ -75,7 +75,7 @@ fun MediaQualitySelectionSheet(
                     ExposedDropdownMenu(expanded, { expanded = false }) {
                         state.allCandidates.forEach { c ->
                             DropdownMenuItem(
-                                text = { Text(c.resolution + " · " + formatSize(c.sizeBytes)) },
+                                text = { Text(c.resolution + " - " + formatSize(c.sizeBytes)) },
                                 onClick = { selected = c; expanded = false }
                             )
                         }
@@ -84,7 +84,7 @@ fun MediaQualitySelectionSheet(
             }
 
             TextButton(onClick = { renameOpen = !renameOpen }) {
-                Text("✏️ Rename", color = NeonPurple) }
+                Text("Rename", color = NeonPurple) }
             if (renameOpen) {
                 OutlinedTextField(
                     value = fileName, onValueChange = { fileName = it },
@@ -98,7 +98,7 @@ fun MediaQualitySelectionSheet(
                 colors = ButtonDefaults.buttonColors(containerColor = NeonPurple),
                 modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
-                Text("⬇ DOWNLOAD",
+                Text("DOWNLOAD",
                     style = MaterialTheme.typography.titleMedium, color = Color.White)
             }
             Spacer(Modifier.height(24.dp))

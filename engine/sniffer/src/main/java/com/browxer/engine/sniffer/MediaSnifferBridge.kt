@@ -5,6 +5,7 @@ import android.os.HandlerThread
 import android.webkit.JavascriptInterface
 import com.browxer.core.domain.MediaCandidate
 import com.browxer.core.domain.SourceLayer
+import com.browxer.engine.resolver.BlobResolver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -23,7 +24,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class MediaSnifferBridge @Inject constructor(
-    private val scope: CoroutineScope // limited to Dispatchers.Default
+    private val scope: CoroutineScope, // limited to Dispatchers.Default
+    private val blobResolver: BlobResolver // reassembles chunked blob payloads
 ) {
     private val handlerThread = HandlerThread("browxer-sniffer").apply { start() }
     private val handler = Handler(handlerThread.looper)
@@ -58,15 +60,22 @@ class MediaSnifferBridge @Inject constructor(
         handler.post {
             runCatching {
                 val meta = JSONObject(metaJson)
-                _candidates.tryEmit(
-                    MediaCandidate(
-                        url = "blob:${meta.optString("blobId")}",
-                        mimeType = meta.optString("type", "video/mp4"),
-                        sizeBytes = meta.optLong("size", -1),
-                        source = SourceLayer.BLOB,
-                        pageUrl = meta.optString("pageUrl")
+                val blobId = meta.optString("blobId")
+                val chunkIndex = meta.optInt("chunkIndex", 0)
+                // Persist the chunk so BlobResolver can reassemble the payload later
+                blobResolver.onChunk(blobId, chunkIndex, meta.optLong("size", -1), base64Chunk)
+                // Surface the blob as a downloadable candidate once, on its first chunk
+                if (chunkIndex == 0) {
+                    _candidates.tryEmit(
+                        MediaCandidate(
+                            url = "blob:" + blobId,
+                            mimeType = meta.optString("type", "video/mp4"),
+                            sizeBytes = meta.optLong("size", -1),
+                            source = SourceLayer.BLOB,
+                            pageUrl = meta.optString("pageUrl")
+                        )
                     )
-                )
+                }
             }
         }
     }

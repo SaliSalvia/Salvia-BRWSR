@@ -7,15 +7,14 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.browxer.core.domain.DownloadTask
-import com.browxer.engine.downloader.DownloadService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import java.io.File
 
 /**
- * Runs at app start: re-enqueues interrupted downloads (QUEUED/DOWNLOADING)
- * after a process kill. Registered under unique name "DownloadRecovery".
+ * Runs at app start: resets interrupted DOWNLOADING rows back to QUEUED so
+ * StartupRecovery (:app) can hand them to the foreground DownloadService.
+ * Kept free of any downloader dependency to avoid a
+ * core:database <-> engine:downloader module dependency cycle.
  */
 @HiltWorker
 class DownloadRecoveryWorker @AssistedInject constructor(
@@ -25,26 +24,11 @@ class DownloadRecoveryWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val active = dao.getActiveDownloads()
-        active.forEach { e ->
-            dao.updateStatus(e.id, DownloadEntity.QUEUED)
-            DownloadService.enqueue(applicationContext, e.toTask())
+        dao.getActiveDownloads().forEach { entity ->
+            dao.updateStatus(entity.id, DownloadEntity.QUEUED)
         }
         return Result.success()
     }
-
-    private fun DownloadEntity.toTask() = DownloadTask(
-        id = id, url = url, fileName = fileName, mimeType = mimeType,
-        kind = when (sourceLayer) {
-            "HLS" -> DownloadTask.Kind.HLS
-            "DASH" -> DownloadTask.Kind.DASH
-            "YTDLP" -> DownloadTask.Kind.YTDLP
-            "BLOB" -> DownloadTask.Kind.BLOB
-            else -> DownloadTask.Kind.DIRECT
-        },
-        workDir = File(applicationContext.cacheDir, "downloads/${id}").absolutePath,
-        pageUrl = url
-    )
 
     companion object {
         fun schedule(context: Context) {

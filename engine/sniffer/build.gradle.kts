@@ -9,10 +9,7 @@ android {
     namespace = "com.browxer.engine.sniffer"
     compileSdk = 35
 
-    defaultConfig {
-        minSdk = 24
-        consumerProguardFiles("consumer-rules.pro")
-    }
+    defaultConfig { minSdk = 24 }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -20,9 +17,11 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
 }
+
 dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:domain"))
+    implementation(project(":engine:resolver"))
 
     implementation(libs.jsoup)
     implementation(libs.youtubedl.android.library)

@@ -15,6 +15,7 @@ import com.browxer.engine.ranker.ScoredCandidate
 import com.browxer.engine.resolver.DashParser
 import com.browxer.engine.resolver.HlsParser
 import com.browxer.engine.resolver.YtdlpResolver
+import com.browxer.engine.sniffer.MediaSnifferBridge
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +29,7 @@ import javax.inject.Inject
 @HiltViewModel
 class BrowserViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
+    val snifferBridge: MediaSnifferBridge, // exposed so the WebView can register it
     private val ranker: MediaCandidateRanker,
     private val admission: MediaSniffAdmission,
     private val hlsParser: HlsParser,
@@ -44,6 +46,13 @@ class BrowserViewModel @Inject constructor(
 
     // 200-capped buffer, normalized-URL dedupe (bug rule #6)
     private val buffer = ArrayDeque<MediaCandidate>(MAX_CANDIDATES)
+
+    init {
+        // Live wire: JS sniffer -> bridge -> this ViewModel
+        viewModelScope.launch {
+            snifferBridge.candidates.collect { onMediaDetected(it) }
+        }
+    }
 
     fun onMediaDetected(candidate: MediaCandidate) {
         val key = admission.normalize(candidate.url)

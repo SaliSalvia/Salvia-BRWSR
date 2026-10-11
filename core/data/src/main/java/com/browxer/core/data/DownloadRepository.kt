@@ -10,6 +10,7 @@ import javax.inject.Singleton
 class DownloadRepository @Inject constructor(private val dao: DownloadDao) {
     fun getAllDownloads(): Flow<List<DownloadEntity>> = dao.getAllDownloads()
     suspend fun getActiveDownloads(): List<DownloadEntity> = dao.getActiveDownloads()
+    suspend fun getById(id: Long): DownloadEntity? = dao.getById(id)
 
     suspend fun enqueueDownload(
         url: String, fileName: String, mimeType: String?, sourceLayer: String
