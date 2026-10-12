@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Browxer pre-flight — run before tagging a release (bash scripts/preflight.sh).
-# Checks the 8 known CI/build risks in order of likelihood.
+# Checks the 9 known CI/build risks in order of likelihood.
 set -u
 FAIL=0
 
@@ -79,19 +79,31 @@ else
   warn "skipped (no runnable local wrapper) — CI will run it"
 fi
 
-step "7. Baseline profile & ProfileInstaller"
-if [ -f app/src/main/baseline-prof.txt ]; then
-  ok "baseline-prof.txt present in :app"
+step "7. Baseline profile"
+if [ -f app/src/main/baseline-prof.txt ] && grep -Eq '^[HSP]*L' app/src/main/baseline-prof.txt; then
+  if grep -qF '**' app/src/main/baseline-prof.txt; then
+    fail "hand-written wildcard profile detected — generate a real one on a device (README-BUILD.md) or leave the stub empty"
+  else
+    ok "baseline-prof.txt contains real (device-generated) rules"
+  fi
 else
-  fail "app/src/main/baseline-prof.txt missing"
-fi
-if grep -q 'androidx-profileinstaller' gradle/libs.versions.toml && grep -q 'libs.androidx.profileinstaller' app/build.gradle.kts; then
-  ok "androidx.profileinstaller wired into :app"
-else
-  fail "androidx.profileinstaller missing — the baseline profile will not install"
+  warn "no active baseline profile — acceptable until a device-generated one lands"
 fi
 
-step "8. Macrobenchmark module compiles"
+step "8. Bundled Vazirmatn fonts (GMS-free)"
+N=$(ls core/ui/src/main/res/font/*.ttf 2>/dev/null | wc -l | tr -d ' ')
+if [ "$N" -ge 5 ]; then
+  ok "$N Vazirmatn TTFs bundled in core/ui/src/main/res/font"
+else
+  fail "only $N TTFs found — run: bash scripts/download-fonts.sh && git add core/ui/src/main/res/font/*.ttf"
+fi
+if grep -rq 'googlefonts' core/ui/src/main/java || grep -q 'ui-text-google-fonts' core/ui/build.gradle.kts gradle/libs.versions.toml; then
+  fail "Google Fonts provider still wired — bundled TTFs only, no GMS dependency"
+else
+  ok "no GMS font provider"
+fi
+
+step "9. Macrobenchmark module compiles"
 if [ -x ./gradlew ] && [ -f gradle/wrapper/gradle-wrapper.jar ]; then
   if ./gradlew :macrobenchmark:assembleDebug --stacktrace; then
     ok "macrobenchmark module compiles"

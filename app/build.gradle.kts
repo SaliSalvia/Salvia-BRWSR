@@ -119,9 +119,6 @@ dependencies {
     implementation(libs.compose.material.icons.extended)
     implementation(libs.navigation.compose)
 
-    // Installs the packaged baseline profile (app/src/main/baseline-prof.txt).
-    implementation(libs.androidx.profileinstaller)
-
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.work)
