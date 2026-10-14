@@ -1,3 +1,5 @@
+> ⚠️ **This repository is superseded.** Development continues in [SaliSalvia/SalviaBrowxer](https://github.com/SaliSalvia/SalviaBrowxer) — the current, maintained browser+downloader. Please use that repository for the latest code and releases.
+
 # 🚀 Browxer — Android Media Browser & Downloader
 
 A WebView-based Android browser whose superpower is an **evidence-based Media Sniffer Engine**: it detects and downloads the *primary* video/audio/image the user actually came for — including dynamic sites (Instagram, TikTok, Twitter/X, YouTube, Facebook, Reddit, Vimeo) — with honest, no-fake-download guardrails.
